@@ -1,0 +1,17 @@
+{
+  "name": "glazer",
+  "version": "1.0.0",
+  "description": "Glaze detector selfbot + GIF responders for Roblox trading server",
+  "main": "glazing.js",
+  "scripts": {
+    "start": "node glazing.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "discord.js-selfbot-v13": "^3.2.0",
+    "@google/generative-ai": "^0.21.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
