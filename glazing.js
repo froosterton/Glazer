@@ -1,16 +1,14 @@
 // glazing.js
+
 const { Client } = require('discord.js-selfbot-v13');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const axios = require('axios');
 
 // ------------- CONFIG (ENV-ONLY FOR SECRETS) -------------
-
 // Main selfbot token (controller)
 const TOKEN = process.env.DISCORD_TOKEN;
-
 // Gemini API key
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
 // Glaze webhook (notification)
 const GLAZE_WEBHOOK_URL = process.env.GLAZE_WEBHOOK_URL;
 
@@ -55,32 +53,6 @@ const MONITOR_CHANNEL_IDS = [
 // Initial focus terms (can be changed with !setglaze)
 let glazeTerms = ['item factor', 'factor'];
 
-// Role filter – user must have at least one role and
-// every role (except @everyone) must be in this list
-const ALLOWED_ROLES = [
-  'Verified',
-  'Nitro Booster',
-  '200k Members',
-  'Game Night',
-  'Weeb',
-  'Art Talk',
-  'Music',
-  'Pets',
-  "Rolimon's News Pings",
-  'Content Pings',
-  'Roblox News Pings',
-  'Trading News Pings',
-  'Limited Pings',
-  'UGC Limited Pings',
-  '-Free UGC Limited Pings',
-  'Free UGC Limited Game Pings',
-  'Upcoming UGC Limiteds Ping',
-  'Free UGC Event Pings',
-  'Poll Pings',
-  'Value Change Pings',
-  'Projection Pings'
-];
-
 // basic env validation
 if (!TOKEN) {
   console.error('DISCORD_TOKEN is not set');
@@ -104,12 +76,10 @@ if (!BOT_ACCOUNTS.some(acc => acc.token)) {
 let accountPointer = 0;
 
 // ------------- GEMINI SETUP -------------
-
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
 // ------------- DISCORD CLIENT -------------
-
 const client = new Client({ checkUpdate: false });
 
 // small sleep helper
@@ -125,10 +95,8 @@ function termsAsText() {
 function getNextTwoAccounts() {
   const available = BOT_ACCOUNTS.filter(acc => acc.token);
   if (available.length === 0) return [];
-
   const first = available[accountPointer % available.length];
   const second = available[(accountPointer + 1) % available.length];
-
   accountPointer = (accountPointer + 2) % available.length;
   return [first, second];
 }
@@ -142,7 +110,6 @@ async function sendGifsForAlert(channelId) {
   for (const acc of accountsToUse) {
     try {
       const gifClient = new Client({ checkUpdate: false });
-
       gifClient.on('ready', async () => {
         try {
           const channel =
@@ -153,7 +120,6 @@ async function sendGifsForAlert(channelId) {
             await gifClient.destroy();
             return;
           }
-
           for (const gifUrl of acc.gifs) {
             await channel.send(gifUrl);
             // 5.2 second slowmode between each GIF
@@ -165,7 +131,6 @@ async function sendGifsForAlert(channelId) {
           await gifClient.destroy();
         }
       });
-
       await gifClient.login(acc.token);
     } catch (err) {
       console.error('[GIF] Error logging in gif account:', err.message);
@@ -174,7 +139,6 @@ async function sendGifsForAlert(channelId) {
 }
 
 // ------------- MESSAGE HANDLING -------------
-
 client.on('ready', () => {
   console.log(`Glaze selfbot logged in as ${client.user.tag}`);
   console.log(`Monitoring channels: ${MONITOR_CHANNEL_IDS.join(', ')}`);
@@ -194,12 +158,10 @@ client.on('messageCreate', async (message) => {
         .split(',')
         .map((t) => t.trim().toLowerCase())
         .filter(Boolean);
-
       if (newTerms.length === 0) {
         await message.reply('❌ You must provide at least one term.');
         return;
       }
-
       glazeTerms = newTerms;
       await message.reply(
         `✅ Glaze terms updated to: \`${termsAsText()}\``
@@ -211,30 +173,8 @@ client.on('messageCreate', async (message) => {
     // ------- Only monitor the configured channels -------
     if (!MONITOR_CHANNEL_IDS.includes(message.channel.id)) return;
 
-    // Ignore other bots’ messages (selfbot user isn’t a bot)
+    // Ignore other bots' messages (selfbot user isn't a bot)
     if (message.author.bot) return;
-
-    // ROLE FILTER (same style as determiner)
-    if (!message.guild) return;
-
-    let member = message.member;
-    if (!member) {
-      try {
-        member = await message.guild.members.fetch(message.author.id);
-      } catch {
-        return;
-      }
-    }
-
-    const userRoleNames = member.roles.cache
-      .filter((r) => r.name !== '@everyone')
-      .map((r) => r.name);
-
-    const onlyAllowedRoles =
-      userRoleNames.length > 0 &&
-      userRoleNames.every((roleName) => ALLOWED_ROLES.includes(roleName));
-
-    if (!onlyAllowedRoles) return;
 
     const lower = content.toLowerCase();
 
@@ -242,7 +182,6 @@ client.on('messageCreate', async (message) => {
     const mentionsConfiguredTerm = glazeTerms.some(
       (term) => term && lower.includes(term)
     );
-
     if (!mentionsConfiguredTerm) return;
 
     const focusList = termsAsText();
@@ -250,7 +189,6 @@ client.on('messageCreate', async (message) => {
     // ------- Ask Gemini whether this really needs a glaze -------
     const prompt = `
 You will see a Discord message from a Roblox-related server.
-
 There is a concept or phrase we are watching for, called the "focus term".
 The current focus term(s) are: ${focusList}
 
@@ -278,7 +216,6 @@ Message: ${content}
 
     const aiResult = await model.generateContent(prompt);
     const aiText = aiResult.response.text().trim().toUpperCase();
-
     console.log(
       `[Gemini] For "${content}" with focus [${focusList}] -> ${aiText}`
     );
@@ -292,10 +229,8 @@ Message: ${content}
     await sleep(2000);
 
     // ------- Send glaze webhook -------
-
     const guildId = message.guild?.id || '@me';
     const jumpLink = `https://discord.com/channels/${guildId}/${message.channel.id}/${message.id}`;
-
     const avatarUrl = message.author.displayAvatarURL({
       format: 'png',
       size: 128
@@ -328,7 +263,6 @@ Message: ${content}
 });
 
 // ------------- STARTUP -------------
-
 client.on('error', (e) => console.error('Discord client error:', e));
 process.on('unhandledRejection', (e) =>
   console.error('Unhandled promise rejection:', e)
