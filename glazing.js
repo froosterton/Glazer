@@ -163,37 +163,40 @@ async function withChannel(token, channelId, fn) {
   });
 }
 
-// 1) Token 1 sends TEXT_BLOCK (100%, always first)
-// 2) 1 GIF per token, rotate through tokens until all 6 sent (round-robin)
-async function sendGifsForAlert(channelId) {
+// Token 1 sends TEXT_BLOCK as soon as a message has blacklisted words (no AI)
+async function sendToken1TextBlock(channelId) {
   const token1 = BOT_ACCOUNTS[0];
+  if (!token1?.token) return;
+  await withChannel(token1.token, channelId, async (ch) => {
+    await ch.send(TEXT_BLOCK);
+    console.log('[Glaze] Token 1 sent text block');
+  });
+}
+
+// 1 GIF per token, rotate until 4 total sent (round-robin, no Token 1)
+const GIF_LIMIT = 4;
+
+async function sendGifsForAlert(channelId) {
   const otherAccounts = BOT_ACCOUNTS.slice(1).filter((acc) => acc.token);
-
-  // ---- Step 1: Token 1 ALWAYS sends the text block ----
-  if (token1?.token) {
-    await withChannel(token1.token, channelId, async (ch) => {
-      await ch.send(TEXT_BLOCK);
-      console.log('[Glaze] Token 1 sent text block');
-    });
-  }
-
   if (otherAccounts.length === 0) return;
 
-  // ---- Step 2: 1 GIF per token, rotate until all 6 sent ----
-  // Shuffle account order and each account's GIF order
   const accountOrder = shuffle(otherAccounts);
   const gifsByAcc = accountOrder.map((acc) => shuffle([...(acc.gifs || [])]));
 
+  const queue = [];
   const maxRounds = Math.max(0, ...gifsByAcc.map((g) => g.length));
   for (let round = 0; round < maxRounds; round++) {
     for (let i = 0; i < accountOrder.length; i++) {
       const gifUrl = gifsByAcc[i][round];
-      if (!gifUrl) continue;
-      await withChannel(accountOrder[i].token, channelId, async (ch) => {
-        await ch.send(gifUrl.trim());
-      });
-      await sleep(5200);
+      if (gifUrl) queue.push({ acc: accountOrder[i], gifUrl });
     }
+  }
+
+  for (const { acc, gifUrl } of queue.slice(0, GIF_LIMIT)) {
+    await withChannel(acc.token, channelId, async (ch) => {
+      await ch.send(gifUrl.trim());
+    });
+    await sleep(5200);
   }
 }
 
@@ -237,15 +240,18 @@ client.on('messageCreate', async (message) => {
 
     const lower = content.toLowerCase();
 
-    // Quick pre-check: does the message contain any focus term?
+    // Blacklisted words (glaze terms): does the message contain any?
     const mentionsConfiguredTerm = glazeTerms.some(
       (term) => term && lower.includes(term)
     );
     if (!mentionsConfiguredTerm) return;
 
+    // ------- Token 1: send text block IMMEDIATELY when blacklisted words appear (no AI) -------
+    await sendToken1TextBlock(message.channel.id);
+
     const focusList = termsAsText();
 
-    // ------- Ask Gemini whether this really needs a glaze -------
+    // ------- Ask Gemini whether we also do webhook + GIFs -------
     const prompt = `
 You will see a Discord message from a Roblox-related server.
 There is a concept or phrase we are watching for, called the "focus term".
@@ -314,7 +320,7 @@ Message: ${content}
       `[Glaze] Sent alert for ${message.author.tag} (${message.id})`
     );
 
-    // ------- 1) Token 1 sends text block, 2) Others send GIFs (random order) -------
+    // ------- 4 GIFs only, round-robin (Token 1 already sent above) -------
     await sendGifsForAlert(message.channel.id);
   } catch (err) {
     console.error('[Glaze] Error processing message:', err);
