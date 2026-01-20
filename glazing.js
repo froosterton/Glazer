@@ -164,7 +164,7 @@ async function withChannel(token, channelId, fn) {
 }
 
 // 1) Token 1 sends TEXT_BLOCK (100%, always first)
-// 2) Immediately after, other tokens send their GIFs in random account order, random GIF order per account
+// 2) 1 GIF per token, rotate through tokens until all 6 sent (round-robin)
 async function sendGifsForAlert(channelId) {
   const token1 = BOT_ACCOUNTS[0];
   const otherAccounts = BOT_ACCOUNTS.slice(1).filter((acc) => acc.token);
@@ -179,12 +179,17 @@ async function sendGifsForAlert(channelId) {
 
   if (otherAccounts.length === 0) return;
 
-  // ---- Step 2: Other tokens send GIFs in random order ----
-  const ordered = shuffle(otherAccounts);
-  for (const acc of ordered) {
-    const gifs = shuffle(acc.gifs || []);
-    for (const gifUrl of gifs) {
-      await withChannel(acc.token, channelId, async (ch) => {
+  // ---- Step 2: 1 GIF per token, rotate until all 6 sent ----
+  // Shuffle account order and each account's GIF order
+  const accountOrder = shuffle(otherAccounts);
+  const gifsByAcc = accountOrder.map((acc) => shuffle([...(acc.gifs || [])]));
+
+  const maxRounds = Math.max(0, ...gifsByAcc.map((g) => g.length));
+  for (let round = 0; round < maxRounds; round++) {
+    for (let i = 0; i < accountOrder.length; i++) {
+      const gifUrl = gifsByAcc[i][round];
+      if (!gifUrl) continue;
+      await withChannel(accountOrder[i].token, channelId, async (ch) => {
         await ch.send(gifUrl.trim());
       });
       await sleep(5200);
