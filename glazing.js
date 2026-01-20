@@ -85,8 +85,8 @@ const BOT_ACCOUNTS = [
 
 // Channels to monitor for questions
 const MONITOR_CHANNEL_IDS = [
-  '1463314402907521086',
-  '1463314402907521086'
+  '430203025659789343',
+  '442709792839172099'
 ];
 
 // Initial focus terms (can be changed with !setglaze)
