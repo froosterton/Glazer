@@ -12,42 +12,81 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 // Glaze webhook (notification)
 const GLAZE_WEBHOOK_URL = process.env.GLAZE_WEBHOOK_URL;
 
-// Extra accounts that will send GIFs (tokens from env, gifs hard-coded)
+// Block of text Token 1 ALWAYS sends first (100%, no matter what)
+const TEXT_BLOCK = `ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ`;
+
+// Extra accounts: [0] = text-only (Token 1), [1-3] = GIF senders
 const BOT_ACCOUNTS = [
   {
     token: process.env.GLAZE_BOT_TOKEN_1,
-    gifs: [
-      'https://tenor.com/view/baby-ai-130-backpack-supreme-backpack-baby-tuff-baby-meme-gif-2218754133828871165',
-      'https://tenor.com/view/hmusicruof4-rowley-diary-of-a-wimpy-kid-rodrick-rules-gif-26773802'
-    ]
+    gifs: [] // unused; Token 1 only sends TEXT_BLOCK
   },
   {
     token: process.env.GLAZE_BOT_TOKEN_2,
     gifs: [
-      'https://tenor.com/view/sigma-gif-15449497793648793961',
-      'https://tenor.com/view/james-franco-wait-what-wut-wtf-nani-gif-25479769'
+      'https://tenor.com/view/speed-ishowspeed-speed-stream-ishowspeed-stream-speed-nod-gif-1082323842437565509 ',
+      'https://tenor.com/view/russel-westbrook-ignore-kid-ignored-the-kid-ignores-the-kid-gif-13915927085408886018 '
     ]
   },
   {
     token: process.env.GLAZE_BOT_TOKEN_3,
     gifs: [
-      'https://tenor.com/view/gumball-the-amazing-world-of-gumball-can-i-put-my-baka-mitai-gif-23338606',
-      'https://tenor.com/view/when-u-dream-about-being-a-singer-gif-2931117426764808373'
+      'https://tenor.com/view/flight-reacts-flightreacts-tongue-tongue-laugh-gif-13724048537815479089 ',
+      'https://tenor.com/view/celebrate-show-off-drink-up-drink-time-feeling-good-gif-14739319 '
     ]
   },
   {
     token: process.env.GLAZE_BOT_TOKEN_4,
     gifs: [
-      'https://tenor.com/view/russel-westbrook-ignore-kid-ignored-the-kid-ignores-the-kid-gif-13915927085408886018',
-      'https://tenor.com/view/michaeljordan-mj-basketball-gif-michael-jordan-no-no-no-no-gif-16220345851539903827'
+      'https://tenor.com/view/epstein-walking-gif-5562429190146171448 ',
+      'https://tenor.com/view/charlie-kirk-eeffoc-coffee-kirk-sip-gif-4020112974186077286 '
     ]
   }
 ];
 
 // Channels to monitor for questions
 const MONITOR_CHANNEL_IDS = [
-  '430203025659789343',
-  '442709792839172099'
+  '1463314402907521086',
+  '1463314402907521086'
 ];
 
 // Initial focus terms (can be changed with !setglaze)
@@ -68,12 +107,19 @@ if (!GLAZE_WEBHOOK_URL) {
 }
 if (!BOT_ACCOUNTS.some(acc => acc.token)) {
   console.warn(
-    'Warning: no GLAZE_BOT_TOKEN_x envs are set. GIF sending will not work.'
+    'Warning: no GLAZE_BOT_TOKEN_x envs are set. Text/GIF sending will not work.'
   );
 }
 
-// pointer for cycling accounts (two at a time)
-let accountPointer = 0;
+// ------------- HELPERS -------------
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 // ------------- GEMINI SETUP -------------
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
@@ -91,49 +137,57 @@ function termsAsText() {
   return glazeTerms.length ? glazeTerms.join(', ') : '(none)';
 }
 
-// get next 2 accounts in a rotating cycle: (1,2) -> (3,4) -> (1,2) -> ...
-function getNextTwoAccounts() {
-  const available = BOT_ACCOUNTS.filter(acc => acc.token);
-  if (available.length === 0) return [];
-  const first = available[accountPointer % available.length];
-  const second = available[(accountPointer + 1) % available.length];
-  accountPointer = (accountPointer + 2) % available.length;
-  return [first, second];
+// Login a client, run fn(channel), then destroy. Resolves when done.
+async function withChannel(token, channelId, fn) {
+  return new Promise((resolve, reject) => {
+    const c = new Client({ checkUpdate: false });
+    c.on('ready', async () => {
+      try {
+        const ch =
+          c.channels.cache.get(channelId) ||
+          (await c.channels.fetch(channelId).catch(() => null));
+        if (!ch) {
+          console.log('[Glaze] Could not find channel');
+          await c.destroy();
+          return resolve();
+        }
+        await fn(ch);
+      } catch (err) {
+        console.error('[Glaze] Error:', err.message);
+      } finally {
+        await c.destroy();
+        resolve();
+      }
+    });
+    c.login(token).catch(reject);
+  });
 }
 
-// login the two accounts and send their gifs in the given channel
-// with 5.2s delay between each GIF send
+// 1) Token 1 sends TEXT_BLOCK (100%, always first)
+// 2) Immediately after, other tokens send their GIFs in random account order, random GIF order per account
 async function sendGifsForAlert(channelId) {
-  const accountsToUse = getNextTwoAccounts();
-  if (!accountsToUse.length) return;
+  const token1 = BOT_ACCOUNTS[0];
+  const otherAccounts = BOT_ACCOUNTS.slice(1).filter((acc) => acc.token);
 
-  for (const acc of accountsToUse) {
-    try {
-      const gifClient = new Client({ checkUpdate: false });
-      gifClient.on('ready', async () => {
-        try {
-          const channel =
-            gifClient.channels.cache.get(channelId) ||
-            (await gifClient.channels.fetch(channelId).catch(() => null));
-          if (!channel) {
-            console.log('[GIF] Could not find channel for gif client');
-            await gifClient.destroy();
-            return;
-          }
-          for (const gifUrl of acc.gifs) {
-            await channel.send(gifUrl);
-            // 5.2 second slowmode between each GIF
-            await sleep(5200);
-          }
-        } catch (err) {
-          console.error('[GIF] Error sending gifs:', err.message);
-        } finally {
-          await gifClient.destroy();
-        }
+  // ---- Step 1: Token 1 ALWAYS sends the text block ----
+  if (token1?.token) {
+    await withChannel(token1.token, channelId, async (ch) => {
+      await ch.send(TEXT_BLOCK);
+      console.log('[Glaze] Token 1 sent text block');
+    });
+  }
+
+  if (otherAccounts.length === 0) return;
+
+  // ---- Step 2: Other tokens send GIFs in random order ----
+  const ordered = shuffle(otherAccounts);
+  for (const acc of ordered) {
+    const gifs = shuffle(acc.gifs || []);
+    for (const gifUrl of gifs) {
+      await withChannel(acc.token, channelId, async (ch) => {
+        await ch.send(gifUrl.trim());
       });
-      await gifClient.login(acc.token);
-    } catch (err) {
-      console.error('[GIF] Error logging in gif account:', err.message);
+      await sleep(5200);
     }
   }
 }
@@ -255,7 +309,7 @@ Message: ${content}
       `[Glaze] Sent alert for ${message.author.tag} (${message.id})`
     );
 
-    // ------- Send GIFs from the rotating bot accounts -------
+    // ------- 1) Token 1 sends text block, 2) Others send GIFs (random order) -------
     await sendGifsForAlert(message.channel.id);
   } catch (err) {
     console.error('[Glaze] Error processing message:', err);
