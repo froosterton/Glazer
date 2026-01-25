@@ -11,149 +11,73 @@ const TOKEN = process.env.DISCORD_TOKEN;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 // Glaze webhook (notification)
 const GLAZE_WEBHOOK_URL = process.env.GLAZE_WEBHOOK_URL;
-// Pre-populated list of Tenor GIF URLs (no API key needed)
+// Pre-populated list of REAL Tenor GIF URLs (verified to embed in Discord)
 const GIF_POOL = [
-  'https://tenor.com/view/laugh-gif-25559911',
-  'https://tenor.com/view/reaction-gif-22954713',
-  'https://tenor.com/view/funny-gif-20075640',
-  'https://tenor.com/view/lol-gif-24284561',
-  'https://tenor.com/view/haha-gif-21039485',
-  'https://tenor.com/view/dancing-gif-17077560',
-  'https://tenor.com/view/celebrate-gif-14739319',
-  'https://tenor.com/view/excited-gif-16109475',
-  'https://tenor.com/view/happy-gif-13909270',
-  'https://tenor.com/view/wow-gif-15062123',
-  'https://tenor.com/view/cool-gif-18290534',
-  'https://tenor.com/view/fire-gif-19384756',
-  'https://tenor.com/view/lit-gif-21847293',
-  'https://tenor.com/view/vibe-gif-20918374',
-  'https://tenor.com/view/mood-gif-17294835',
-  'https://tenor.com/view/reaction-gif-14523678',
-  'https://tenor.com/view/funny-gif-23847561',
-  'https://tenor.com/view/meme-gif-19283746',
-  'https://tenor.com/view/lmao-gif-22384756',
-  'https://tenor.com/view/bruh-gif-18273645',
-  'https://tenor.com/view/hype-gif-20394857',
-  'https://tenor.com/view/win-gif-16283947',
-  'https://tenor.com/view/epic-gif-21938475',
-  'https://tenor.com/view/goat-gif-17384956',
-  'https://tenor.com/view/legend-gif-19847362',
-  'https://tenor.com/view/crazy-gif-20183746',
-  'https://tenor.com/view/random-gif-18374652',
-  'https://tenor.com/view/viral-gif-22183746',
-  'https://tenor.com/view/trending-gif-19283746',
-  'https://tenor.com/view/comedy-gif-17384756',
-  'https://tenor.com/view/amazing-gif-21837465',
-  'https://tenor.com/view/nice-gif-16284735',
-  'https://tenor.com/view/great-gif-20394856',
-  'https://tenor.com/view/perfect-gif-18273649',
-  'https://tenor.com/view/yes-gif-22938475',
-  'https://tenor.com/view/nod-gif-17293847',
-  'https://tenor.com/view/agree-gif-19384756',
-  'https://tenor.com/view/clap-gif-21847365',
-  'https://tenor.com/view/applause-gif-16293847',
-  'https://tenor.com/view/cheer-gif-20394857',
-  'https://tenor.com/view/party-gif-18274635',
-  'https://tenor.com/view/dance-gif-22183947',
-  'https://tenor.com/view/groove-gif-17293856',
-  'https://tenor.com/view/moves-gif-19384765',
-  'https://tenor.com/view/vibing-gif-21847356',
-  'https://tenor.com/view/chill-gif-16294837',
-  'https://tenor.com/view/relax-gif-20394867',
-  'https://tenor.com/view/smooth-gif-18273658',
-  'https://tenor.com/view/slick-gif-22938476',
-  'https://tenor.com/view/fresh-gif-17293858',
-  'https://tenor.com/view/clean-gif-19384768',
-  'https://tenor.com/view/sharp-gif-21847368',
-  'https://tenor.com/view/sick-gif-16294839',
-  'https://tenor.com/view/dope-gif-20394869',
-  'https://tenor.com/view/tight-gif-18273661',
-  'https://tenor.com/view/rad-gif-22938479',
-  'https://tenor.com/view/gnarly-gif-17293861',
-  'https://tenor.com/view/wild-gif-19384771',
-  'https://tenor.com/view/insane-gif-21847371',
-  'https://tenor.com/view/mental-gif-16294842',
-  'https://tenor.com/view/bonkers-gif-20394872',
-  'https://tenor.com/view/nuts-gif-18273664',
-  'https://tenor.com/view/wacky-gif-22938482',
-  'https://tenor.com/view/goofy-gif-17293864',
-  'https://tenor.com/view/silly-gif-19384774',
-  'https://tenor.com/view/playful-gif-21847374',
-  'https://tenor.com/view/fun-gif-16294845',
-  'https://tenor.com/view/joy-gif-20394875',
-  'https://tenor.com/view/bliss-gif-18273667',
-  'https://tenor.com/view/elated-gif-22938485',
-  'https://tenor.com/view/thrilled-gif-17293867',
-  'https://tenor.com/view/pumped-gif-19384777',
-  'https://tenor.com/view/hyped-gif-21847377',
-  'https://tenor.com/view/stoked-gif-16294848',
-  'https://tenor.com/view/amped-gif-20394878',
-  'https://tenor.com/view/fired-up-gif-18273670',
-  'https://tenor.com/view/ready-gif-22938488',
-  'https://tenor.com/view/lets-go-gif-17293870',
-  'https://tenor.com/view/game-on-gif-19384780',
-  'https://tenor.com/view/bring-it-gif-21847380',
-  'https://tenor.com/view/come-on-gif-16294851',
-  'https://tenor.com/view/do-it-gif-20394881',
-  'https://tenor.com/view/send-it-gif-18273673',
-  'https://tenor.com/view/full-send-gif-22938491',
-  'https://tenor.com/view/yolo-gif-17293873',
-  'https://tenor.com/view/no-cap-gif-19384783',
-  'https://tenor.com/view/facts-gif-21847383',
-  'https://tenor.com/view/real-gif-16294854',
-  'https://tenor.com/view/truth-gif-20394884',
-  'https://tenor.com/view/honest-gif-18273676',
-  'https://tenor.com/view/straight-up-gif-22938494',
-  'https://tenor.com/view/for-real-gif-17293876',
-  'https://tenor.com/view/deadass-gif-19384786',
-  'https://tenor.com/view/legit-gif-21847386',
-  'https://tenor.com/view/valid-gif-16294857',
-  'https://tenor.com/view/based-gif-20394887',
-  'https://tenor.com/view/goated-gif-18273679',
-  'https://tenor.com/view/bussin-gif-22938497',
-  'https://tenor.com/view/sheesh-gif-17293879',
-  'https://tenor.com/view/ong-gif-19384789'
+  'https://tenor.com/view/michael-scott-the-office-no-god-please-no-gif-4546546',
+  'https://tenor.com/view/sad-pablo-lonely-alone-gif-12928789',
+  'https://tenor.com/view/pedro-pascal-crying-gif-26921971',
+  'https://tenor.com/view/dancing-dance-moves-gif-15601824',
+  'https://tenor.com/view/cat-vibing-gif-18219233',
+  'https://tenor.com/view/laughing-laugh-lol-funny-gif-15745955',
+  'https://tenor.com/view/thumbs-up-gif-19570026',
+  'https://tenor.com/view/crying-emoji-gif-25347028',
+  'https://tenor.com/view/spongebob-rainbow-imagination-gif-5765614',
+  'https://tenor.com/view/elmo-fire-burn-gif-5108003',
+  'https://tenor.com/view/ok-okay-alright-gif-14777928',
+  'https://tenor.com/view/wait-what-gif-14057478',
+  'https://tenor.com/view/walter-white-walter-falling-breaking-bad-dm4uz3-gif-18078549',
+  'https://tenor.com/view/rock-eyebrow-raise-gif-22113367',
+  'https://tenor.com/view/shocked-face-gif-24458917',
+  'https://tenor.com/view/cat-meme-cat-meme-face-gif-12626198126241629840',
+  'https://tenor.com/view/friday-damn-ice-cube-chris-tucker-gif-3885918',
+  'https://tenor.com/view/bruh-gif-17300956',
+  'https://tenor.com/view/monkey-looking-away-gif-15106766',
+  'https://tenor.com/view/kermit-typing-gif-5765612',
+  'https://tenor.com/view/confused-nick-young-what-huh-gif-4552682',
+  'https://tenor.com/view/fine-house-fire-burning-dog-gif-17153074',
+  'https://tenor.com/view/homer-simpson-slowly-disappear-meme-bye-gif-17107185',
+  'https://tenor.com/view/john-cena-are-you-sure-about-that-gif-14258954',
+  'https://tenor.com/view/think-about-it-smart-gif-8800759',
+  'https://tenor.com/view/steve-harvey-really-gif-11907680',
+  'https://tenor.com/view/barack-obama-not-bad-face-gif-12211378',
+  'https://tenor.com/view/the-rock-clapping-gif-12165059',
+  'https://tenor.com/view/dancing-kid-dance-moves-gif-14005631',
+  'https://tenor.com/view/we-dont-do-that-here-black-panther-tchalla-gif-15279809',
+  'https://tenor.com/view/shaq-shake-head-no-gif-11099074',
+  'https://tenor.com/view/im-watching-you-robert-de-niro-gif-5553959',
+  'https://tenor.com/view/you-got-this-thumbs-up-gif-11044011',
+  'https://tenor.com/view/calculating-puzzled-trying-to-solve-gif-11412645',
+  'https://tenor.com/view/visible-confusion-what-confused-gif-14252499',
+  'https://tenor.com/view/steve-carell-facepalm-gif-4965826',
+  'https://tenor.com/view/im-out-peace-gif-10909481',
+  'https://tenor.com/view/oprah-winfrey-you-get-a-gif-5691066',
+  'https://tenor.com/view/mind-blown-explosion-gif-4250676',
+  'https://tenor.com/view/shocked-pikachu-gif-12553858',
+  'https://tenor.com/view/kevin-hart-laugh-lol-gif-9738485',
+  'https://tenor.com/view/why-tho-but-why-gif-10865181',
+  'https://tenor.com/view/bored-boring-gif-4927253',
+  'https://tenor.com/view/mr-bean-waiting-gif-4993748',
+  'https://tenor.com/view/crying-sad-black-guy-gif-8913720',
+  'https://tenor.com/view/spongebob-caveman-ight-imma-head-out-gif-15243135',
+  'https://tenor.com/view/thanos-impossible-gif-12911189',
+  'https://tenor.com/view/wow-eddy-wally-gif-5108002',
+  'https://tenor.com/view/applause-clap-gif-5423581',
+  'https://tenor.com/view/run-away-gif-9649326',
+  'https://tenor.com/view/leonardo-dicaprio-cheers-gif-5639499',
+  'https://tenor.com/view/are-you-kidding-me-seriously-gif-5361142',
+  'https://tenor.com/view/no-way-jose-steve-carell-gif-4930657',
+  'https://tenor.com/view/hell-yeah-cheer-gif-5118089',
+  'https://tenor.com/view/oh-no-cringe-gif-7652339',
+  'https://tenor.com/view/omg-oh-my-god-wow-gif-4934824',
+  'https://tenor.com/view/michael-jackson-popcorn-gif-4847844',
+  'https://tenor.com/view/facepalm-really-gif-4994181',
+  'https://tenor.com/view/look-at-this-dude-gif-10576505',
+  'https://tenor.com/view/disappear-gif-4476407'
 ];
 
 // Block of text Token 1 ALWAYS sends first (100%, no matter what)
 const TEXT_BLOCK = `ㅤ
 ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤ
-ㅤㅤ
 ㅤ
 ㅤ
 ㅤ
@@ -203,15 +127,15 @@ const BOT_ACCOUNTS = [
 
 // Channels to monitor for questions
 const MONITOR_CHANNEL_IDS = [
-  '1464821272172036182',
-  '1464821272172036182'
+  '430203025659789343',
+  '442709792839172099'
 ];
 
 // Guild and channels for !clear command
-const CLEAR_GUILD_ID = '1403167079414104175';
+const CLEAR_GUILD_ID = '415246288779608064';
 const CLEAR_CHANNEL_IDS = [
-  '1464821272172036182',
-  '1464821272172036182'
+  '430203025659789343',
+  '442709792839172099'
 ];
 
 // Webhook for clear completion notification
@@ -318,67 +242,82 @@ async function withChannel(token, channelId, fn) {
 }
 
 // ------------- CLEAR MESSAGES FUNCTION -------------
-// Delete all messages from a specific token in a channel
-async function clearMessagesForToken(token, channelId, tokenLabel) {
+// Delete all messages from a specific token in all channels (runs faster with reduced delay)
+async function clearMessagesForToken(token, channelIds, tokenLabel) {
   return new Promise((resolve) => {
     const c = new Client({ checkUpdate: false });
     let totalDeleted = 0;
 
     c.on('ready', async () => {
       try {
-        const channel = c.channels.cache.get(channelId) ||
-          (await c.channels.fetch(channelId).catch(() => null));
-        
-        if (!channel) {
-          console.log(`[Clear] ${tokenLabel}: Could not find channel ${channelId}`);
-          await c.destroy();
-          return resolve(0);
-        }
-
         const userId = c.user.id;
-        let lastMessageId = null;
-        let hasMore = true;
 
-        console.log(`[Clear] ${tokenLabel}: Starting deletion in channel ${channelId}...`);
-
-        while (hasMore) {
-          // Fetch messages (100 at a time, max allowed)
-          const fetchOptions = { limit: 100 };
-          if (lastMessageId) {
-            fetchOptions.before = lastMessageId;
-          }
-
-          const messages = await channel.messages.fetch(fetchOptions).catch(() => null);
-          if (!messages || messages.size === 0) {
-            hasMore = false;
-            break;
-          }
-
-          // Filter for messages from this user
-          const myMessages = messages.filter(m => m.author.id === userId);
+        // Process all channels for this token
+        for (const channelId of channelIds) {
+          const channel = c.channels.cache.get(channelId) ||
+            (await c.channels.fetch(channelId).catch(() => null));
           
-          // Delete each message
-          for (const [msgId, msg] of myMessages) {
-            try {
-              await msg.delete();
-              totalDeleted++;
-              // Small delay to avoid rate limiting
-              await sleep(1100);
-            } catch (err) {
-              console.log(`[Clear] ${tokenLabel}: Could not delete message ${msgId}: ${err.message}`);
+          if (!channel) {
+            console.log(`[Clear] ${tokenLabel}: Could not find channel ${channelId}`);
+            continue;
+          }
+
+          let lastMessageId = null;
+          let hasMore = true;
+
+          console.log(`[Clear] ${tokenLabel}: Starting deletion in channel ${channelId}...`);
+
+          while (hasMore) {
+            // Fetch messages (100 at a time, max allowed)
+            const fetchOptions = { limit: 100 };
+            if (lastMessageId) {
+              fetchOptions.before = lastMessageId;
+            }
+
+            const messages = await channel.messages.fetch(fetchOptions).catch(() => null);
+            if (!messages || messages.size === 0) {
+              hasMore = false;
+              break;
+            }
+
+            // Filter for messages from this user
+            const myMessages = messages.filter(m => m.author.id === userId);
+            
+            // Delete each message with minimal delay
+            for (const [msgId, msg] of myMessages) {
+              try {
+                await msg.delete();
+                totalDeleted++;
+                // Reduced delay - handle rate limits with retry
+                await sleep(300);
+              } catch (err) {
+                if (err.message.includes('rate limit') || err.httpStatus === 429) {
+                  // Hit rate limit, wait longer then retry
+                  console.log(`[Clear] ${tokenLabel}: Rate limited, waiting...`);
+                  await sleep(2000);
+                  try {
+                    await msg.delete();
+                    totalDeleted++;
+                  } catch (retryErr) {
+                    console.log(`[Clear] ${tokenLabel}: Could not delete message ${msgId}`);
+                  }
+                } else {
+                  console.log(`[Clear] ${tokenLabel}: Could not delete message ${msgId}: ${err.message}`);
+                }
+              }
+            }
+
+            // Update lastMessageId for pagination
+            lastMessageId = messages.last()?.id;
+            
+            // If we got fewer than 100 messages, we've reached the end
+            if (messages.size < 100) {
+              hasMore = false;
             }
           }
-
-          // Update lastMessageId for pagination
-          lastMessageId = messages.last()?.id;
-          
-          // If we got fewer than 100 messages, we've reached the end
-          if (messages.size < 100) {
-            hasMore = false;
-          }
         }
 
-        console.log(`[Clear] ${tokenLabel}: Deleted ${totalDeleted} messages in channel ${channelId}`);
+        console.log(`[Clear] ${tokenLabel}: Deleted ${totalDeleted} total messages`);
       } catch (err) {
         console.error(`[Clear] ${tokenLabel}: Error:`, err.message);
       } finally {
@@ -394,7 +333,7 @@ async function clearMessagesForToken(token, channelId, tokenLabel) {
   });
 }
 
-// Clear all messages for bot accounts in specified channels
+// Clear all messages for bot accounts in specified channels (runs all tokens in parallel)
 async function clearAllMessages(replyChannel) {
   // Only use the 4 bot tokens (not the main token)
   const botTokens = BOT_ACCOUNTS
@@ -406,17 +345,17 @@ async function clearAllMessages(replyChannel) {
     return;
   }
 
-  await replyChannel.send(`🗑️ Starting message cleanup for ${botTokens.length} bot accounts across ${CLEAR_CHANNEL_IDS.length} channels...`);
-  console.log(`[Clear] Starting cleanup for ${botTokens.length} bot accounts...`);
+  await replyChannel.send(`🗑️ Starting FAST message cleanup for ${botTokens.length} bot accounts (running in parallel)...`);
+  console.log(`[Clear] Starting parallel cleanup for ${botTokens.length} bot accounts...`);
 
-  let grandTotal = 0;
+  // Run all tokens in parallel for maximum speed
+  const results = await Promise.all(
+    botTokens.map(({ token, label }) => 
+      clearMessagesForToken(token, CLEAR_CHANNEL_IDS, label)
+    )
+  );
 
-  for (const { token, label } of botTokens) {
-    for (const channelId of CLEAR_CHANNEL_IDS) {
-      const deleted = await clearMessagesForToken(token, channelId, label);
-      grandTotal += deleted;
-    }
-  }
+  const grandTotal = results.reduce((sum, count) => sum + count, 0);
 
   await replyChannel.send(`✅ Cleanup complete! Deleted ${grandTotal} total messages.`);
   console.log(`[Clear] Cleanup complete! Total deleted: ${grandTotal}`);
