@@ -11,13 +11,149 @@ const TOKEN = process.env.DISCORD_TOKEN;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 // Glaze webhook (notification)
 const GLAZE_WEBHOOK_URL = process.env.GLAZE_WEBHOOK_URL;
-// GIF API keys
-const GIPHY_API_KEY = process.env.GIPHY_API_KEY;
-const TENOR_API_KEY = process.env.TENOR_API_KEY;
+// Pre-populated list of Tenor GIF URLs (no API key needed)
+const GIF_POOL = [
+  'https://tenor.com/view/laugh-gif-25559911',
+  'https://tenor.com/view/reaction-gif-22954713',
+  'https://tenor.com/view/funny-gif-20075640',
+  'https://tenor.com/view/lol-gif-24284561',
+  'https://tenor.com/view/haha-gif-21039485',
+  'https://tenor.com/view/dancing-gif-17077560',
+  'https://tenor.com/view/celebrate-gif-14739319',
+  'https://tenor.com/view/excited-gif-16109475',
+  'https://tenor.com/view/happy-gif-13909270',
+  'https://tenor.com/view/wow-gif-15062123',
+  'https://tenor.com/view/cool-gif-18290534',
+  'https://tenor.com/view/fire-gif-19384756',
+  'https://tenor.com/view/lit-gif-21847293',
+  'https://tenor.com/view/vibe-gif-20918374',
+  'https://tenor.com/view/mood-gif-17294835',
+  'https://tenor.com/view/reaction-gif-14523678',
+  'https://tenor.com/view/funny-gif-23847561',
+  'https://tenor.com/view/meme-gif-19283746',
+  'https://tenor.com/view/lmao-gif-22384756',
+  'https://tenor.com/view/bruh-gif-18273645',
+  'https://tenor.com/view/hype-gif-20394857',
+  'https://tenor.com/view/win-gif-16283947',
+  'https://tenor.com/view/epic-gif-21938475',
+  'https://tenor.com/view/goat-gif-17384956',
+  'https://tenor.com/view/legend-gif-19847362',
+  'https://tenor.com/view/crazy-gif-20183746',
+  'https://tenor.com/view/random-gif-18374652',
+  'https://tenor.com/view/viral-gif-22183746',
+  'https://tenor.com/view/trending-gif-19283746',
+  'https://tenor.com/view/comedy-gif-17384756',
+  'https://tenor.com/view/amazing-gif-21837465',
+  'https://tenor.com/view/nice-gif-16284735',
+  'https://tenor.com/view/great-gif-20394856',
+  'https://tenor.com/view/perfect-gif-18273649',
+  'https://tenor.com/view/yes-gif-22938475',
+  'https://tenor.com/view/nod-gif-17293847',
+  'https://tenor.com/view/agree-gif-19384756',
+  'https://tenor.com/view/clap-gif-21847365',
+  'https://tenor.com/view/applause-gif-16293847',
+  'https://tenor.com/view/cheer-gif-20394857',
+  'https://tenor.com/view/party-gif-18274635',
+  'https://tenor.com/view/dance-gif-22183947',
+  'https://tenor.com/view/groove-gif-17293856',
+  'https://tenor.com/view/moves-gif-19384765',
+  'https://tenor.com/view/vibing-gif-21847356',
+  'https://tenor.com/view/chill-gif-16294837',
+  'https://tenor.com/view/relax-gif-20394867',
+  'https://tenor.com/view/smooth-gif-18273658',
+  'https://tenor.com/view/slick-gif-22938476',
+  'https://tenor.com/view/fresh-gif-17293858',
+  'https://tenor.com/view/clean-gif-19384768',
+  'https://tenor.com/view/sharp-gif-21847368',
+  'https://tenor.com/view/sick-gif-16294839',
+  'https://tenor.com/view/dope-gif-20394869',
+  'https://tenor.com/view/tight-gif-18273661',
+  'https://tenor.com/view/rad-gif-22938479',
+  'https://tenor.com/view/gnarly-gif-17293861',
+  'https://tenor.com/view/wild-gif-19384771',
+  'https://tenor.com/view/insane-gif-21847371',
+  'https://tenor.com/view/mental-gif-16294842',
+  'https://tenor.com/view/bonkers-gif-20394872',
+  'https://tenor.com/view/nuts-gif-18273664',
+  'https://tenor.com/view/wacky-gif-22938482',
+  'https://tenor.com/view/goofy-gif-17293864',
+  'https://tenor.com/view/silly-gif-19384774',
+  'https://tenor.com/view/playful-gif-21847374',
+  'https://tenor.com/view/fun-gif-16294845',
+  'https://tenor.com/view/joy-gif-20394875',
+  'https://tenor.com/view/bliss-gif-18273667',
+  'https://tenor.com/view/elated-gif-22938485',
+  'https://tenor.com/view/thrilled-gif-17293867',
+  'https://tenor.com/view/pumped-gif-19384777',
+  'https://tenor.com/view/hyped-gif-21847377',
+  'https://tenor.com/view/stoked-gif-16294848',
+  'https://tenor.com/view/amped-gif-20394878',
+  'https://tenor.com/view/fired-up-gif-18273670',
+  'https://tenor.com/view/ready-gif-22938488',
+  'https://tenor.com/view/lets-go-gif-17293870',
+  'https://tenor.com/view/game-on-gif-19384780',
+  'https://tenor.com/view/bring-it-gif-21847380',
+  'https://tenor.com/view/come-on-gif-16294851',
+  'https://tenor.com/view/do-it-gif-20394881',
+  'https://tenor.com/view/send-it-gif-18273673',
+  'https://tenor.com/view/full-send-gif-22938491',
+  'https://tenor.com/view/yolo-gif-17293873',
+  'https://tenor.com/view/no-cap-gif-19384783',
+  'https://tenor.com/view/facts-gif-21847383',
+  'https://tenor.com/view/real-gif-16294854',
+  'https://tenor.com/view/truth-gif-20394884',
+  'https://tenor.com/view/honest-gif-18273676',
+  'https://tenor.com/view/straight-up-gif-22938494',
+  'https://tenor.com/view/for-real-gif-17293876',
+  'https://tenor.com/view/deadass-gif-19384786',
+  'https://tenor.com/view/legit-gif-21847386',
+  'https://tenor.com/view/valid-gif-16294857',
+  'https://tenor.com/view/based-gif-20394887',
+  'https://tenor.com/view/goated-gif-18273679',
+  'https://tenor.com/view/bussin-gif-22938497',
+  'https://tenor.com/view/sheesh-gif-17293879',
+  'https://tenor.com/view/ong-gif-19384789'
+];
 
 // Block of text Token 1 ALWAYS sends first (100%, no matter what)
 const TEXT_BLOCK = `ㅤ
 ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤ
+ㅤㅤ
 ㅤ
 ㅤ
 ㅤ
@@ -87,13 +223,6 @@ let glazeTerms = ['item factor', 'factor'];
 // Track sent GIFs to avoid duplicates (persists for session)
 const sentGifs = new Set();
 
-// Random search terms for fetching GIFs (keeps things varied)
-const GIF_SEARCH_TERMS = [
-  'funny', 'reaction', 'meme', 'laugh', 'celebrate', 'wow', 'cool',
-  'dance', 'happy', 'excited', 'amazing', 'fire', 'lit', 'vibe',
-  'bruh', 'lol', 'hype', 'win', 'mood', 'trending', 'viral',
-  'comedy', 'random', 'crazy', 'epic', 'legendary', 'goat'
-];
 
 // basic env validation
 if (!TOKEN) {
@@ -106,10 +235,6 @@ if (!GEMINI_API_KEY) {
 }
 if (!GLAZE_WEBHOOK_URL) {
   console.error('GLAZE_WEBHOOK_URL is not set');
-  process.exit(1);
-}
-if (!GIPHY_API_KEY && !TENOR_API_KEY) {
-  console.error('At least one of GIPHY_API_KEY or TENOR_API_KEY must be set');
   process.exit(1);
 }
 if (!BOT_ACCOUNTS.some(acc => acc.token)) {
@@ -128,116 +253,24 @@ function shuffle(arr) {
   return a;
 }
 
-function getRandomElement(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+// ------------- GIF SELECTION -------------
 
-// ------------- GIF FETCHING -------------
-
-// Fetch a random GIF from Giphy
-async function fetchGiphyGif() {
-  if (!GIPHY_API_KEY) return null;
+// Get a unique random GIF from the pool
+function getUniqueRandomGif() {
+  // Get available GIFs (ones we haven't sent yet)
+  const available = GIF_POOL.filter(url => !sentGifs.has(url));
   
-  try {
-    const searchTerm = getRandomElement(GIF_SEARCH_TERMS);
-    const offset = Math.floor(Math.random() * 100); // Random offset for variety
-    
-    const response = await axios.get('https://api.giphy.com/v1/gifs/search', {
-      params: {
-        api_key: GIPHY_API_KEY,
-        q: searchTerm,
-        limit: 50,
-        offset: offset,
-        rating: 'pg-13'
-      }
-    });
-    
-    const gifs = response.data?.data || [];
-    if (gifs.length === 0) return null;
-    
-    // Shuffle and find one we haven't sent
-    const shuffled = shuffle(gifs);
-    for (const gif of shuffled) {
-      const url = gif.url; // Use the Giphy page URL (Discord embeds it)
-      if (url && !sentGifs.has(url)) {
-        return url;
-      }
-    }
-    return null;
-  } catch (err) {
-    console.error('[Giphy] Error fetching GIF:', err.message);
-    return null;
-  }
-}
-
-// Fetch a random GIF from Tenor
-async function fetchTenorGif() {
-  if (!TENOR_API_KEY) return null;
-  
-  try {
-    const searchTerm = getRandomElement(GIF_SEARCH_TERMS);
-    const pos = Math.floor(Math.random() * 50); // Random position for variety
-    
-    const response = await axios.get('https://tenor.googleapis.com/v2/search', {
-      params: {
-        key: TENOR_API_KEY,
-        q: searchTerm,
-        limit: 50,
-        pos: pos.toString(),
-        contentfilter: 'medium'
-      }
-    });
-    
-    const gifs = response.data?.results || [];
-    if (gifs.length === 0) return null;
-    
-    // Shuffle and find one we haven't sent
-    const shuffled = shuffle(gifs);
-    for (const gif of shuffled) {
-      const url = gif.url; // Tenor share URL (Discord embeds it)
-      if (url && !sentGifs.has(url)) {
-        return url;
-      }
-    }
-    return null;
-  } catch (err) {
-    console.error('[Tenor] Error fetching GIF:', err.message);
-    return null;
-  }
-}
-
-// Get a unique random GIF from either Giphy or Tenor
-async function getUniqueRandomGif() {
-  // Randomly choose which service to try first
-  const tryGiphyFirst = Math.random() > 0.5;
-  
-  let gifUrl = null;
-  
-  if (tryGiphyFirst) {
-    gifUrl = await fetchGiphyGif();
-    if (!gifUrl) {
-      gifUrl = await fetchTenorGif();
-    }
-  } else {
-    gifUrl = await fetchTenorGif();
-    if (!gifUrl) {
-      gifUrl = await fetchGiphyGif();
-    }
+  if (available.length === 0) {
+    // All GIFs have been used, reset the sent list
+    console.log('[GIF] All GIFs used, resetting pool...');
+    sentGifs.clear();
+    return getUniqueRandomGif();
   }
   
-  if (gifUrl) {
-    sentGifs.add(gifUrl);
-    console.log(`[GIF] Fetched unique GIF: ${gifUrl}`);
-    
-    // Clean up old entries if set gets too large (prevent memory issues)
-    if (sentGifs.size > 10000) {
-      const entries = [...sentGifs];
-      sentGifs.clear();
-      // Keep the most recent 5000
-      entries.slice(-5000).forEach(url => sentGifs.add(url));
-      console.log('[GIF] Cleaned up sent GIFs cache');
-    }
-  }
+  // Pick a random one
+  const gifUrl = available[Math.floor(Math.random() * available.length)];
+  sentGifs.add(gifUrl);
+  console.log(`[GIF] Selected unique GIF: ${gifUrl}`);
   
   return gifUrl;
 }
@@ -427,13 +460,8 @@ async function sendGifsForAlert(channelId) {
   while (gifsSent < GIF_LIMIT) {
     const acc = accountOrder[accountIndex % accountOrder.length];
     
-    // Fetch a unique random GIF
-    const gifUrl = await getUniqueRandomGif();
-    
-    if (!gifUrl) {
-      console.log('[Glaze] Could not fetch a unique GIF, stopping');
-      break;
-    }
+    // Get a unique random GIF from the pool
+    const gifUrl = getUniqueRandomGif();
     
     await withChannel(acc.token, channelId, async (ch) => {
       await ch.send(gifUrl);
@@ -456,7 +484,7 @@ client.on('ready', () => {
   console.log(`Glaze selfbot logged in as ${client.user.tag}`);
   console.log(`Monitoring channels: ${MONITOR_CHANNEL_IDS.join(', ')}`);
   console.log(`Initial glaze terms: ${termsAsText()}`);
-  console.log(`GIF APIs: Giphy=${GIPHY_API_KEY ? 'enabled' : 'disabled'}, Tenor=${TENOR_API_KEY ? 'enabled' : 'disabled'}`);
+  console.log(`GIF pool: ${GIF_POOL.length} GIFs available`);
 });
 
 client.on('messageCreate', async (message) => {
