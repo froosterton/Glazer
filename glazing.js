@@ -11,68 +11,43 @@ const TOKEN = process.env.DISCORD_TOKEN;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 // Glaze webhook (notification)
 const GLAZE_WEBHOOK_URL = process.env.GLAZE_WEBHOOK_URL;
-// Pre-populated list of REAL Tenor GIF URLs (verified to embed in Discord)
+// Pre-populated list of VERIFIED Tenor GIF URLs (confirmed to embed in Discord)
 const GIF_POOL = [
-  'https://tenor.com/view/michael-scott-the-office-no-god-please-no-gif-4546546',
-  'https://tenor.com/view/sad-pablo-lonely-alone-gif-12928789',
-  'https://tenor.com/view/pedro-pascal-crying-gif-26921971',
-  'https://tenor.com/view/dancing-dance-moves-gif-15601824',
-  'https://tenor.com/view/cat-vibing-gif-18219233',
-  'https://tenor.com/view/laughing-laugh-lol-funny-gif-15745955',
-  'https://tenor.com/view/thumbs-up-gif-19570026',
-  'https://tenor.com/view/crying-emoji-gif-25347028',
-  'https://tenor.com/view/spongebob-rainbow-imagination-gif-5765614',
-  'https://tenor.com/view/elmo-fire-burn-gif-5108003',
-  'https://tenor.com/view/ok-okay-alright-gif-14777928',
-  'https://tenor.com/view/wait-what-gif-14057478',
-  'https://tenor.com/view/walter-white-walter-falling-breaking-bad-dm4uz3-gif-18078549',
-  'https://tenor.com/view/rock-eyebrow-raise-gif-22113367',
-  'https://tenor.com/view/shocked-face-gif-24458917',
-  'https://tenor.com/view/cat-meme-cat-meme-face-gif-12626198126241629840',
-  'https://tenor.com/view/friday-damn-ice-cube-chris-tucker-gif-3885918',
-  'https://tenor.com/view/bruh-gif-17300956',
-  'https://tenor.com/view/monkey-looking-away-gif-15106766',
-  'https://tenor.com/view/kermit-typing-gif-5765612',
-  'https://tenor.com/view/confused-nick-young-what-huh-gif-4552682',
-  'https://tenor.com/view/fine-house-fire-burning-dog-gif-17153074',
-  'https://tenor.com/view/homer-simpson-slowly-disappear-meme-bye-gif-17107185',
-  'https://tenor.com/view/john-cena-are-you-sure-about-that-gif-14258954',
-  'https://tenor.com/view/think-about-it-smart-gif-8800759',
-  'https://tenor.com/view/steve-harvey-really-gif-11907680',
-  'https://tenor.com/view/barack-obama-not-bad-face-gif-12211378',
-  'https://tenor.com/view/the-rock-clapping-gif-12165059',
-  'https://tenor.com/view/dancing-kid-dance-moves-gif-14005631',
-  'https://tenor.com/view/we-dont-do-that-here-black-panther-tchalla-gif-15279809',
-  'https://tenor.com/view/shaq-shake-head-no-gif-11099074',
-  'https://tenor.com/view/im-watching-you-robert-de-niro-gif-5553959',
-  'https://tenor.com/view/you-got-this-thumbs-up-gif-11044011',
-  'https://tenor.com/view/calculating-puzzled-trying-to-solve-gif-11412645',
-  'https://tenor.com/view/visible-confusion-what-confused-gif-14252499',
-  'https://tenor.com/view/steve-carell-facepalm-gif-4965826',
-  'https://tenor.com/view/im-out-peace-gif-10909481',
-  'https://tenor.com/view/oprah-winfrey-you-get-a-gif-5691066',
-  'https://tenor.com/view/mind-blown-explosion-gif-4250676',
-  'https://tenor.com/view/shocked-pikachu-gif-12553858',
-  'https://tenor.com/view/kevin-hart-laugh-lol-gif-9738485',
-  'https://tenor.com/view/why-tho-but-why-gif-10865181',
-  'https://tenor.com/view/bored-boring-gif-4927253',
-  'https://tenor.com/view/mr-bean-waiting-gif-4993748',
-  'https://tenor.com/view/crying-sad-black-guy-gif-8913720',
-  'https://tenor.com/view/spongebob-caveman-ight-imma-head-out-gif-15243135',
-  'https://tenor.com/view/thanos-impossible-gif-12911189',
-  'https://tenor.com/view/wow-eddy-wally-gif-5108002',
-  'https://tenor.com/view/applause-clap-gif-5423581',
-  'https://tenor.com/view/run-away-gif-9649326',
-  'https://tenor.com/view/leonardo-dicaprio-cheers-gif-5639499',
-  'https://tenor.com/view/are-you-kidding-me-seriously-gif-5361142',
-  'https://tenor.com/view/no-way-jose-steve-carell-gif-4930657',
-  'https://tenor.com/view/hell-yeah-cheer-gif-5118089',
-  'https://tenor.com/view/oh-no-cringe-gif-7652339',
-  'https://tenor.com/view/omg-oh-my-god-wow-gif-4934824',
-  'https://tenor.com/view/michael-jackson-popcorn-gif-4847844',
-  'https://tenor.com/view/facepalm-really-gif-4994181',
-  'https://tenor.com/view/look-at-this-dude-gif-10576505',
-  'https://tenor.com/view/disappear-gif-4476407'
+  'https://tenor.com/view/you-are-amazing-compliment-day-you\'re-great-you-are-awesome-you-rock-gif-2084026781482709906',
+  'https://tenor.com/view/sleep-time-gif-25989084',
+  'https://tenor.com/view/keli-holiday-gif-3978267496766457428',
+  'https://tenor.com/view/brrrr-gif-10590087637226567450',
+  'https://tenor.com/view/good-morning-have-a-nice-day-cup-of-coffee-heart-love-gif-3054035059466242737',
+  'https://tenor.com/view/nervous-scared-hand-shaking-shivering-gif-24524523',
+  'https://tenor.com/view/gif-gif-15379971984385267012',
+  'https://tenor.com/view/%D0%B4%D0%B6%D0%BE%D0%BD%D0%B0-%D1%85%D0%B8%D0%BB%D0%BB-jonah-hill-facepalm-%D1%80%D1%83%D0%BA%D0%B0-%D0%BB%D0%B8%D1%86%D0%BE-%D0%B4%D0%BE%D0%BB%D0%BE%D0%BD%D1%8F-%D0%BE%D0%B1%D0%BB%D0%B8%D1%87%D1%87%D1%8F-gif-7167197686338732060',
+  'https://tenor.com/view/night-king-gif-21521750',
+  'https://tenor.com/view/wheelie-rollin-they-see-me-rollin-jeep-kid-gif-5436852',
+  'https://tenor.com/view/head-stand-snowman-gif-1860793099280058249',
+  'https://tenor.com/view/hhgf-gif-14529573991400142151',
+  'https://tenor.com/view/love-friday-love-gif-12367893480338114524',
+  'https://tenor.com/view/happy-feet-happy-friday-friday-penguin-tap-dancing-gif-16815886744909591113',
+  'https://tenor.com/view/eas-weather-alert-skywatcher-winter-storm-warning-gif-10344596713501469501',
+  'https://tenor.com/view/my-tiny-senpai-shiori-katase-blushing-anime-girl-anime-girl-blushing-anime-santa-gif-13450474803966531994',
+  'https://tenor.com/view/hug-me-im-sad-sad-girl-gif-13082547568726386573',
+  'https://tenor.com/view/coffee-red-rose-good-morning-gif-17275257957144391902',
+  'https://tenor.com/view/national-pie-day-pie-day-pie-pie-slice-tenor-gif-776077030181372937',
+  'https://tenor.com/view/will-gif-2553459115951539861',
+  'https://tenor.com/view/happy-dance-bts-yoongi-cute-gif-21755470',
+  'https://tenor.com/view/jeep-snow-gif-10035761557361525283',
+  'https://tenor.com/view/i-said-hey-he-man-sparkles-gif-5207389',
+  'https://tenor.com/view/ice-dog-fail-gif-4685452',
+  'https://tenor.com/view/perfectboykoo-bts-hearts-bts-live-gif-25414787',
+  'https://tenor.com/view/thursday-morning-gif-7178052004157059780',
+  'https://tenor.com/view/snoop-dogg-drop-it-like-its-hot-4number-four-fingers-calvin-broadus-jr-gif-26215289',
+  'https://tenor.com/view/friday-eve-thursday-is-friday-eve-gif-1814930874371615861',
+  'https://tenor.com/view/yankees-new-york-yankees-cody-bellinger-mlb-aaron-judge-gif-14148293183028009625',
+  'https://tenor.com/view/go-do-it-yes-no-go-for-it-gif-17183104',
+  'https://tenor.com/view/good-morning-sunshine-sun-light-gif-8709867105601794021',
+  'https://tenor.com/view/thursday-gif-2917120680378249439',
+  'https://tenor.com/view/thanos-memoji-gif-23490017',
+  'https://tenor.com/view/winter-is-coming-jon-snow-game-of-thrones-got-gif-16908557',
+  'https://tenor.com/view/sad-tigger-gif-2587323430035725369'
 ];
 
 // Block of text Token 1 ALWAYS sends first (100%, no matter what)
@@ -151,7 +126,6 @@ const TEXT_BLOCK = `ㅤ
 ㅤ
 ㅤ
 ㅤ
-ㅤ
 ㅤ`;
 
 // Extra accounts: [0] = text-only (Token 1), [1-3] = GIF senders
@@ -169,7 +143,7 @@ const MONITOR_CHANNEL_IDS = [
 ];
 
 // Guild and channels for !clear command
-const CLEAR_GUILD_ID = '1403167079414104175';
+const CLEAR_GUILD_ID = '415246288779608064';
 const CLEAR_CHANNEL_IDS = [
   '1464821272172036182',
   '1464821272172036182'
