@@ -88,8 +88,8 @@ const TEXT_BLOCK = `ㅤ
 ㅤ
 ㅤ
 ㅤ
-ㅤ
 ㅤㅤ
+ㅤ
 ㅤ
 ㅤ
 ㅤ
@@ -138,15 +138,15 @@ const BOT_ACCOUNTS = [
 
 // Channels to monitor for questions
 const MONITOR_CHANNEL_IDS = [
-  '1464821272172036182',
-  '1464821272172036182'
+  '430203025659789343',
+  '442709792839172099'
 ];
 
 // Guild and channels for !clear command
-const CLEAR_GUILD_ID = '1403167079414104175';
+const CLEAR_GUILD_ID = '415246288779608064';
 const CLEAR_CHANNEL_IDS = [
-  '1464821272172036182',
-  '1464821272172036182'
+  '430203025659789343',
+  '442709792839172099'
 ];
 
 // Webhook for clear completion notification
